@@ -1,4 +1,4 @@
-const { User } = require("../model");
+const { User, File } = require("../model");
 const hashPassword = require("../utils/hashPassword");
 const comparePassword = require("../utils/comparePassword");
 const generateToken = require("../utils/generateToken");
@@ -201,7 +201,7 @@ const changePassword = async (req, res, next) => {
 const updateProfile = async (req, res, next) => {
   try {
     const { _id } = req.user;
-    const { name, email } = req.body;
+    const { name, email, profilePic } = req.body;
     const user = await User.findById(_id).select(
       "-password -verificationCode -forgotPasswordCode"
     );
@@ -220,8 +220,16 @@ const updateProfile = async (req, res, next) => {
         throw new Error("Email already exists");
       }
     }
+    if (profilePic) {
+      const imageUrl = await File.findById(profilePic);
+      if (!imageUrl) {
+        res.code = 404;
+        throw new Error("File not found");
+      }
+    }
     user.name = name ? name : user.name;
     user.email = email ? email : user.email;
+    user.profilePic = profilePic;
     if (email) {
       user.isVerified = false;
     }
@@ -230,6 +238,27 @@ const updateProfile = async (req, res, next) => {
       code: 200,
       status: true,
       message: "Profile updated successfully",
+      data: user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const currentUser = async (req, res, next) => {
+  try {
+    const { _id } = req.user;
+    const user = await User.findById(_id)
+      .select("-password -verificationCode -forgotPasswordCode")
+      .populate("profilePic");
+    if (!user) {
+      res.code = 404;
+      throw new Error("User not found");
+    }
+    res.status(200).json({
+      code: 200,
+      status: true,
+      message: "User found",
       data: user,
     });
   } catch (error) {
@@ -246,4 +275,5 @@ module.exports = {
   resetPassword,
   changePassword,
   updateProfile,
+  currentUser,
 };

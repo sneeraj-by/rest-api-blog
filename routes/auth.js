@@ -53,5 +53,6 @@ router.put(
   isAuth,
   authController.updateProfile
 );
+router.get("/current-user", isAuth, authController.currentUser);
 
 module.exports = router;

@@ -4,7 +4,12 @@ const cors = require("cors");
 const morgan = require("morgan");
 require("dotenv").config();
 
-const { authRoutes, categoryRoutes, fileRoutes } = require("./routes");
+const {
+  authRoutes,
+  categoryRoutes,
+  fileRoutes,
+  postRoutes,
+} = require("./routes");
 const connectDB = require("./config/db");
 const errorHandler = require("./middlewares/errorHandler");
 const notfound = require("./controller/notFound");
@@ -25,6 +30,7 @@ app.use(morgan("dev"));
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/category", categoryRoutes);
 app.use("/api/v1/file", fileRoutes);
+app.use("/api/v1/posts", postRoutes);
 
 app.get("/", (req, res) => {
   res
